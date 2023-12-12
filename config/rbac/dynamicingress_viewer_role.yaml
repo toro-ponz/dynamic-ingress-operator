@@ -1,0 +1,27 @@
+# permissions for end users to view dynamicingresses.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: dynamicingress-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: dynamic-ingress-operator
+    app.kubernetes.io/part-of: dynamic-ingress-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: dynamicingress-viewer-role
+rules:
+- apiGroups:
+  - ingress.toroponz.io
+  resources:
+  - dynamicingresses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ingress.toroponz.io
+  resources:
+  - dynamicingresses/status
+  verbs:
+  - get

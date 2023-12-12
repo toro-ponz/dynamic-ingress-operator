@@ -1,0 +1,12 @@
+apiVersion: ingress.toroponz.io/v1beta1
+kind: DynamicIngress
+metadata:
+  labels:
+    app.kubernetes.io/name: dynamicingress
+    app.kubernetes.io/instance: dynamicingress-sample
+    app.kubernetes.io/part-of: dynamic-ingress-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: dynamic-ingress-operator
+  name: dynamicingress-sample
+spec:
+  # TODO(user): Add fields here
