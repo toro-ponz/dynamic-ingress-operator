@@ -7,6 +7,41 @@ metadata:
     app.kubernetes.io/part-of: dynamic-ingress-operator
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: dynamic-ingress-operator
-  name: dynamicingress-sample
+  annotations:
+    ingress.toroponz.io/watcher-name: external-watcher-sample
+    ingress.toroponz.io/expected-status: '200'
+    ingress.toroponz.io/expected-body: '{"status":"maintenance"}'
+    ingress.toroponz.io/expected-policy: contains
+    # ingress.toroponz.io/expected-policy: strict
+    ingress.toroponz.io/error-policy: retain
+    # ingress.toroponz.io/error-policy: passive
+    # ingress.toroponz.io/error-policy: active
+  name: dynamic-ingress-sample
 spec:
-  # TODO(user): Add fields here
+  target:
+    name: test
+    namespace: dynamic-ingress-operator-system
+  passiveIngress: null
+    # metadata:
+    #   annotations: {}
+    #   labels: {}
+    # spec: {}
+  activeIngress:
+    metadata:
+      annotations:
+        alb.ingress.kubernetes.io/group.name: test
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: ip
+        kubernetes.io/ingress.class: alb
+      labels:
+        app.kubernetes.io/name: test
+    spec:
+      rules:
+        - http:
+            paths:
+              - backend:
+                  service:
+                    name: test-service
+                    port:
+                      number: 80
+                pathType: ImplementationSpecific
