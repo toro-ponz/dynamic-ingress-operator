@@ -17,4 +17,13 @@ resources:
   kind: DynamicIngress
   path: github.com/toro-ponz/dynamic-ingress-operator/api/v1beta1
   version: v1beta1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: toroponz.io
+  group: ingress
+  kind: DynamicIngressState
+  path: github.com/toro-ponz/dynamic-ingress-operator/api/v1beta1
+  version: v1beta1
 version: "3"

@@ -1,0 +1,31 @@
+# permissions for end users to edit dynamicingressstates.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: dynamicingressstate-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: dynamic-ingress-operator
+    app.kubernetes.io/part-of: dynamic-ingress-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: dynamicingressstate-editor-role
+rules:
+- apiGroups:
+  - ingress.toroponz.io
+  resources:
+  - dynamicingressstates
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ingress.toroponz.io
+  resources:
+  - dynamicingressstates/status
+  verbs:
+  - get
