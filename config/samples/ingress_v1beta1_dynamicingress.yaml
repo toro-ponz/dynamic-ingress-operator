@@ -22,26 +22,28 @@ spec:
     name: test
     namespace: dynamic-ingress-operator-system
   passiveIngress: null
-    # metadata:
-    #   annotations: {}
-    #   labels: {}
-    # spec: {}
+    # template:
+    #   metadata:
+    #     annotations: {}
+    #     labels: {}
+    #   spec: {}
   activeIngress:
-    metadata:
-      annotations:
-        alb.ingress.kubernetes.io/group.name: test
-        alb.ingress.kubernetes.io/scheme: internet-facing
-        alb.ingress.kubernetes.io/target-type: ip
-        kubernetes.io/ingress.class: alb
-      labels:
-        app.kubernetes.io/name: test
-    spec:
-      rules:
-        - http:
-            paths:
-              - backend:
-                  service:
-                    name: test-service
-                    port:
-                      number: 80
-                pathType: ImplementationSpecific
+    template:
+      metadata:
+        annotations:
+          alb.ingress.kubernetes.io/group.name: test
+          alb.ingress.kubernetes.io/scheme: internet-facing
+          alb.ingress.kubernetes.io/target-type: ip
+          kubernetes.io/ingress.class: alb
+        labels:
+          app.kubernetes.io/name: test
+      spec:
+        rules:
+          - http:
+              paths:
+                - backend:
+                    service:
+                      name: test-service
+                      port:
+                        number: 80
+                  pathType: ImplementationSpecific

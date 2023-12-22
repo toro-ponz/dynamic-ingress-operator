@@ -29,9 +29,9 @@ type DynamicIngressSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Target         DynamicIngressTarget                 `json:"target"`
-	PassiveIngress *DynamicIngressTargetIngressTemplate `json:"passiveIngress,omitempty"`
-	ActiveIngress  *DynamicIngressTargetIngressTemplate `json:"activeIngress,omitempty"`
+	Target         DynamicIngressTarget    `json:"target"`
+	PassiveIngress *DynamicIngressTemplate `json:"passiveIngress,omitempty"`
+	ActiveIngress  *DynamicIngressTemplate `json:"activeIngress,omitempty"`
 }
 
 // DynamicIngressStatus defines the observed state of DynamicIngress
@@ -57,6 +57,10 @@ const (
 	True  = DynamicIngressStatusCondition("True")
 	Error = DynamicIngressStatusCondition("Error")
 )
+
+type DynamicIngressTemplate struct {
+	Template DynamicIngressTargetIngressTemplate `json:"template"`
+}
 
 type DynamicIngressTargetIngressTemplate struct {
 	Metadata DynamicIngressTargetIngressTemplateMetadata `json:"metadata"`
