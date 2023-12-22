@@ -22,11 +22,18 @@ import (
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	ingressv1beta1 "github.com/toro-ponz/dynamic-ingress-operator/api/v1beta1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -46,6 +53,7 @@ type DynamicIngressReconciler struct {
 //+kubebuilder:rbac:groups=ingress.toroponz.io,resources=dynamicingresses,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=ingress.toroponz.io,resources=dynamicingresses/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=ingress.toroponz.io,resources=dynamicingresses/finalizers,verbs=update
+//+kubebuilder:rbac:groups=ingress.toroponz.io,resources=dynamicingressstates,verbs=get;list;watch
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
@@ -85,11 +93,56 @@ func (r *DynamicIngressReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *DynamicIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	p := predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			old := e.ObjectOld.(*ingressv1beta1.DynamicIngressState)
+			new := e.ObjectNew.(*ingressv1beta1.DynamicIngressState)
+			if new.Status.LastUpdateTime == nil {
+				return false
+			}
+			return old.Status.LastUpdateTime.Equal(*new.Status.LastUpdateTime)
+		},
+		CreateFunc: func(e event.CreateEvent) bool {
+			return true
+		},
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&ingressv1beta1.DynamicIngress{}).
 		Owns(&networkingv1.Ingress{}).
-		// TODO: watch
+		Watches(
+			&ingressv1beta1.DynamicIngressState{},
+			handler.EnqueueRequestsFromMapFunc(r.findObjectsForDynamicIngressState),
+			builder.WithPredicates(p),
+		).
 		Complete(r)
+}
+
+const (
+	dynamicIngressStateField = ".spec.state"
+)
+
+func (r *DynamicIngressReconciler) findObjectsForDynamicIngressState(ctx context.Context, state client.Object) []reconcile.Request {
+	attachedDynamicIngresses := &ingressv1beta1.DynamicIngressList{}
+	listOps := &client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(dynamicIngressStateField, state.GetName()),
+		Namespace:     state.GetNamespace(),
+	}
+	err := r.List(context.TODO(), attachedDynamicIngresses, listOps)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(attachedDynamicIngresses.Items))
+	for i, item := range attachedDynamicIngresses.Items {
+		requests[i] = reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      item.GetName(),
+				Namespace: item.GetNamespace(),
+			},
+		}
+	}
+	return requests
 }
 
 func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamicIngress ingressv1beta1.DynamicIngress) error {

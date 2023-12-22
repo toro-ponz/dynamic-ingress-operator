@@ -32,6 +32,7 @@ type DynamicIngressSpec struct {
 	Target         DynamicIngressTarget    `json:"target"`
 	PassiveIngress *DynamicIngressTemplate `json:"passiveIngress,omitempty"`
 	ActiveIngress  *DynamicIngressTemplate `json:"activeIngress,omitempty"`
+	State          string                  `json:"state"`
 }
 
 // DynamicIngressStatus defines the observed state of DynamicIngress

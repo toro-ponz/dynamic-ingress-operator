@@ -47,3 +47,4 @@ spec:
                       port:
                         number: 80
                   pathType: ImplementationSpecific
+  state: dynamic-ingress-state-sample
