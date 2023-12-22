@@ -7,15 +7,6 @@ metadata:
     app.kubernetes.io/part-of: dynamic-ingress-operator
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: dynamic-ingress-operator
-  annotations:
-    ingress.toroponz.io/watcher-name: external-watcher-sample
-    ingress.toroponz.io/expected-status: '200'
-    ingress.toroponz.io/expected-body: '{"status":"maintenance"}'
-    ingress.toroponz.io/expected-policy: contains
-    # ingress.toroponz.io/expected-policy: strict
-    ingress.toroponz.io/error-policy: retain
-    # ingress.toroponz.io/error-policy: passive
-    # ingress.toroponz.io/error-policy: active
   name: dynamic-ingress-sample
 spec:
   target:
@@ -48,3 +39,11 @@ spec:
                         number: 80
                   pathType: ImplementationSpecific
   state: dynamic-ingress-state-sample
+  expected:
+    status: '200'
+    body: '{"status":"maintenance"}'
+    policy: contains
+    # policy: strict
+  errorPolicy: retain
+  # errorPolicy: passive
+  # errorPolicy: active

@@ -355,6 +355,11 @@ spec:
                 required:
                 - template
                 type: object
+              errorPolicy:
+                default: retain
+                type: string
+              expected:
+                type: string
               passiveIngress:
                 properties:
                   template:
@@ -685,6 +690,7 @@ spec:
                 - namespace
                 type: object
             required:
+            - expected
             - state
             - target
             type: object
