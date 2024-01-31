@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	ingressv1beta1 "github.com/toro-ponz/dynamic-ingress-operator/api/v1beta1"
+	ingressv1 "github.com/toro-ponz/dynamic-ingress-operator/api/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -68,7 +68,7 @@ type DynamicIngressReconciler struct {
 func (r *DynamicIngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
-	var dynamicIngress ingressv1beta1.DynamicIngress
+	var dynamicIngress ingressv1.DynamicIngress
 	err := r.Get(ctx, req.NamespacedName, &dynamicIngress)
 	if apierrors.IsNotFound(err) {
 		return ctrl.Result{}, nil
@@ -97,8 +97,8 @@ const (
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *DynamicIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	err := mgr.GetFieldIndexer().IndexField(context.Background(), &ingressv1beta1.DynamicIngress{}, dynamicIngressStateField, func(rawObj client.Object) []string {
-		ingress := rawObj.(*ingressv1beta1.DynamicIngress)
+	err := mgr.GetFieldIndexer().IndexField(context.Background(), &ingressv1.DynamicIngress{}, dynamicIngressStateField, func(rawObj client.Object) []string {
+		ingress := rawObj.(*ingressv1.DynamicIngress)
 		return []string{ingress.Spec.State}
 	})
 	if err != nil {
@@ -107,8 +107,8 @@ func (r *DynamicIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			old := e.ObjectOld.(*ingressv1beta1.DynamicIngressState)
-			new := e.ObjectNew.(*ingressv1beta1.DynamicIngressState)
+			old := e.ObjectOld.(*ingressv1.DynamicIngressState)
+			new := e.ObjectNew.(*ingressv1.DynamicIngressState)
 			if new.Status.LastUpdateTime == nil {
 				return false
 			}
@@ -120,10 +120,10 @@ func (r *DynamicIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&ingressv1beta1.DynamicIngress{}).
+		For(&ingressv1.DynamicIngress{}).
 		Owns(&networkingv1.Ingress{}).
 		Watches(
-			&ingressv1beta1.DynamicIngressState{},
+			&ingressv1.DynamicIngressState{},
 			handler.EnqueueRequestsFromMapFunc(r.findObjectsForDynamicIngressState),
 			builder.WithPredicates(p),
 		).
@@ -134,7 +134,7 @@ func (r *DynamicIngressReconciler) findObjectsForDynamicIngressState(ctx context
 	logger := log.FromContext(ctx)
 	logger.Info(fmt.Sprintf("findObjectsForDynamicIngressState state=%s", state.GetName()))
 
-	attachedDynamicIngresses := &ingressv1beta1.DynamicIngressList{}
+	attachedDynamicIngresses := &ingressv1.DynamicIngressList{}
 	listOps := &client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(dynamicIngressStateField, state.GetName()),
 	}
@@ -157,7 +157,7 @@ func (r *DynamicIngressReconciler) findObjectsForDynamicIngressState(ctx context
 	return requests
 }
 
-func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamicIngress ingressv1beta1.DynamicIngress) error {
+func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamicIngress ingressv1.DynamicIngress) error {
 	logger := log.FromContext(ctx)
 
 	target := dynamicIngress.Spec.Target
@@ -190,8 +190,8 @@ func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamic
 
 func (r *DynamicIngressReconciler) applyIngress(
 	ctx context.Context,
-	target ingressv1beta1.DynamicIngressTarget,
-	ingressTemplate *ingressv1beta1.DynamicIngressTargetIngressTemplate,
+	target ingressv1.DynamicIngressTarget,
+	ingressTemplate *ingressv1.DynamicIngressTargetIngressTemplate,
 ) error {
 	logger := log.FromContext(ctx)
 

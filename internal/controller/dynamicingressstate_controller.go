@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	ingressv1beta1 "github.com/toro-ponz/dynamic-ingress-operator/api/v1beta1"
+	ingressv1 "github.com/toro-ponz/dynamic-ingress-operator/api/v1"
 )
 
 // DynamicIngressStateReconciler reconciles a DynamicIngressState object
@@ -57,6 +57,6 @@ func (r *DynamicIngressStateReconciler) Reconcile(ctx context.Context, req ctrl.
 // SetupWithManager sets up the controller with the Manager.
 func (r *DynamicIngressStateReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&ingressv1beta1.DynamicIngressState{}).
+		For(&ingressv1.DynamicIngressState{}).
 		Complete(r)
 }

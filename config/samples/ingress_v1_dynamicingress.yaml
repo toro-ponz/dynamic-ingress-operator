@@ -1,4 +1,4 @@
-apiVersion: ingress.toroponz.io/v1beta1
+apiVersion: ingress.toroponz.io/v1
 kind: DynamicIngress
 metadata:
   labels:

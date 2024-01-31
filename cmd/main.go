@@ -32,7 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	ingressv1beta1 "github.com/toro-ponz/dynamic-ingress-operator/api/v1beta1"
+	ingressv1 "github.com/toro-ponz/dynamic-ingress-operator/api/v1"
 	"github.com/toro-ponz/dynamic-ingress-operator/internal/controller"
 	//+kubebuilder:scaffold:imports
 )
@@ -45,7 +45,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(ingressv1beta1.AddToScheme(scheme))
+	utilruntime.Must(ingressv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

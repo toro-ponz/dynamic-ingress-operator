@@ -7,7 +7,7 @@ A operator that change ingress spec dynamically by external api (or k8s resource
 ### DynamicIngress
 
 ```yaml
-apiVersion: ingress.toroponz.io/v1beta1
+apiVersion: ingress.toroponz.io/v1
 kind: DynamicIngress
 metadata:
   name: dynamic-ingress-sample
@@ -47,7 +47,7 @@ spec:
 #### Fixed Mode
 
 ```yaml
-apiVersion: ingress.toroponz.io/v1beta1
+apiVersion: ingress.toroponz.io/v1
 kind: DynamicIngressState
 metadata:
   name: dynamic-ingress-state-sample
@@ -65,7 +65,7 @@ spec:
 A mode for calling external HTTP APIs per interval.
 
 ```yaml
-apiVersion: ingress.toroponz.io/v1beta1
+apiVersion: ingress.toroponz.io/v1
 kind: DynamicIngressState
 metadata:
   name: dynamic-ingress-state-sample

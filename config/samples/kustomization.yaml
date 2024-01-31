@@ -1,5 +1,5 @@
 ## Append samples of your project ##
 resources:
-- ingress_v1beta1_dynamicingress.yaml
-- ingress_v1beta1_dynamicingressstate.yaml
+- ingress_v1_dynamicingressstate.yaml
+- ingress_v1_dynamicingress.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

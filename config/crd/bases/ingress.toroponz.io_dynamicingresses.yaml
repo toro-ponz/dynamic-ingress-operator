@@ -18,7 +18,7 @@ spec:
     - jsonPath: .status.value
       name: STATUS
       type: string
-    name: v1beta1
+    name: v1
     schema:
       openAPIV3Schema:
         description: DynamicIngress is the Schema for the dynamicingresses API
