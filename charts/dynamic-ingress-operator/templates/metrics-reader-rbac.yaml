@@ -1,12 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "chart.fullname" . }}-metrics-reader
+  name: {{ include "dynamic-ingress-operator.fullname" . }}-metrics-reader
   labels:
     app.kubernetes.io/component: kube-rbac-proxy
     app.kubernetes.io/created-by: dynamic-ingress-operator
     app.kubernetes.io/part-of: dynamic-ingress-operator
-  {{- include "chart.labels" . | nindent 4 }}
+  {{- include "dynamic-ingress-operator.labels" . | nindent 4 }}
 rules:
 - nonResourceURLs:
   - /metrics

@@ -1,11 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: dynamicingressstates.ingress.toroponz.io
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-  labels:
-  {{- include "chart.labels" . | nindent 4 }}
+  name: dynamicingressstates.ingress.toroponz.io
 spec:
   group: ingress.toroponz.io
   names:
@@ -74,9 +72,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
