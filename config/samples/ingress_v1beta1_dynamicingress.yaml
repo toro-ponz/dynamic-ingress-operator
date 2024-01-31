@@ -40,7 +40,7 @@ spec:
                   pathType: ImplementationSpecific
   state: dynamic-ingress-state-sample
   expected:
-    status: '200'
+    status: 200
     body: '{"status":"maintenance"}'
     policy: contains
     # policy: strict

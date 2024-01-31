@@ -359,7 +359,17 @@ spec:
                 default: retain
                 type: string
               expected:
-                type: string
+                properties:
+                  body:
+                    type: string
+                  policy:
+                    default: strict
+                    type: string
+                  status:
+                    type: integer
+                required:
+                - status
+                type: object
               passiveIngress:
                 properties:
                   template:

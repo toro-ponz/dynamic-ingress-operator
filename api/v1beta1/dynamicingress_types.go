@@ -33,7 +33,7 @@ type DynamicIngressSpec struct {
 	PassiveIngress *DynamicIngressTemplate `json:"passiveIngress,omitempty"`
 	ActiveIngress  *DynamicIngressTemplate `json:"activeIngress,omitempty"`
 	State          string                  `json:"state"`
-	Expected       string                  `json:"expected"`
+	Expected       DynamicIngressExpected  `json:"expected"`
 	// +kubebuilder:default=retain
 	// +optional
 	ErrorPolicy string `json:"errorPolicy,omitempty"`
@@ -83,9 +83,9 @@ type DynamicIngressTarget struct {
 }
 
 type DynamicIngressExpected struct {
-	StatusCode string `json:"statusCode"`
+	Status int `json:"status"`
 	// +optional
-	Body *string `json:"body,omitempty"`
+	Body string `json:"body"`
 	// +kubebuilder:default=strict
 	// +optional
 	Policy string `json:"policy,omitempty"`
