@@ -100,7 +100,7 @@ func (r *DynamicIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			if new.Status.LastUpdateTime == nil {
 				return false
 			}
-			return old.Status.LastUpdateTime.Equal(*new.Status.LastUpdateTime)
+			return old.Status.LastUpdateTime.Equal(new.Status.LastUpdateTime)
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
 			return true
