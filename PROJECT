@@ -10,7 +10,6 @@ repo: github.com/toro-ponz/dynamic-ingress-operator
 resources:
 - api:
     crdVersion: v1
-    namespaced: true
   controller: true
   domain: toroponz.io
   group: ingress

@@ -41,6 +41,7 @@ type DynamicIngressStateStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:scope=Cluster
 
 // DynamicIngressState is the Schema for the dynamicingressstates API
 type DynamicIngressState struct {
