@@ -91,8 +91,20 @@ func (r *DynamicIngressReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	return ctrl.Result{}, nil
 }
 
+const (
+	dynamicIngressStateField = ".spec.state"
+)
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *DynamicIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	err := mgr.GetFieldIndexer().IndexField(context.Background(), &ingressv1beta1.DynamicIngress{}, dynamicIngressStateField, func(rawObj client.Object) []string {
+		ingress := rawObj.(*ingressv1beta1.DynamicIngress)
+		return []string{ingress.Spec.State}
+	})
+	if err != nil {
+		return err
+	}
+
 	p := predicate.Funcs{
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			old := e.ObjectOld.(*ingressv1beta1.DynamicIngressState)
@@ -118,18 +130,17 @@ func (r *DynamicIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-const (
-	dynamicIngressStateField = ".spec.state"
-)
-
 func (r *DynamicIngressReconciler) findObjectsForDynamicIngressState(ctx context.Context, state client.Object) []reconcile.Request {
+	logger := log.FromContext(ctx)
+	logger.Info(fmt.Sprintf("findObjectsForDynamicIngressState state=%s", state.GetName()))
+
 	attachedDynamicIngresses := &ingressv1beta1.DynamicIngressList{}
 	listOps := &client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(dynamicIngressStateField, state.GetName()),
-		Namespace:     state.GetNamespace(),
 	}
 	err := r.List(context.TODO(), attachedDynamicIngresses, listOps)
 	if err != nil {
+		logger.Error(err, fmt.Sprintf("findObjectsForDynamicIngressState state=%s", state.GetName()))
 		return []reconcile.Request{}
 	}
 
@@ -142,6 +153,7 @@ func (r *DynamicIngressReconciler) findObjectsForDynamicIngressState(ctx context
 			},
 		}
 	}
+
 	return requests
 }
 
