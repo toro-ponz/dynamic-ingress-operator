@@ -18,7 +18,11 @@ package controller
 
 import (
 	"context"
+	"fmt"
+	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -47,9 +51,27 @@ type DynamicIngressStateReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *DynamicIngressStateReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	logger := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	var dynamicIngressState ingressv1.DynamicIngressState
+	err := r.Get(ctx, req.NamespacedName, &dynamicIngressState)
+	if apierrors.IsNotFound(err) {
+		return ctrl.Result{}, nil
+	}
+
+	if err != nil {
+		logger.Error(err, "[DynamicIngressState] unable to get DynamicIngressState", "name", req.NamespacedName)
+		return ctrl.Result{}, err
+	}
+
+	if !dynamicIngressState.ObjectMeta.DeletionTimestamp.IsZero() {
+		return ctrl.Result{}, nil
+	}
+
+	err = r.reconcileIngressState(ctx, dynamicIngressState)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	return ctrl.Result{}, nil
 }
@@ -59,4 +81,23 @@ func (r *DynamicIngressStateReconciler) SetupWithManager(mgr ctrl.Manager) error
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&ingressv1.DynamicIngressState{}).
 		Complete(r)
+}
+
+func (r *DynamicIngressStateReconciler) reconcileIngressState(ctx context.Context, dynamicIngressState ingressv1.DynamicIngressState) error {
+	logger := log.FromContext(ctx)
+
+	if dynamicIngressState.Spec.FixedResponse != nil {
+		dynamicIngressState.Status.Response = dynamicIngressState.Spec.FixedResponse
+	}
+
+	now := &v1.Time{Time: time.Now()}
+	dynamicIngressState.Status.LastUpdateTime = now
+	err := r.Status().Update(ctx, &dynamicIngressState)
+	if err != nil {
+		return err
+	}
+
+	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] reconcileIngressState name=%s, lastUpdateTime=%s", dynamicIngressState.Name, now))
+
+	return nil
 }

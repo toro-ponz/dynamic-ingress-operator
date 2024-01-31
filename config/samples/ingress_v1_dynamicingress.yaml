@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: dynamic-ingress-operator
   name: dynamic-ingress-sample
+  namespace: dynamic-ingress-operator-system
 spec:
   target:
     name: test

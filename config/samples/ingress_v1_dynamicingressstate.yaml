@@ -9,4 +9,6 @@ metadata:
     app.kubernetes.io/created-by: dynamic-ingress-operator
   name: dynamic-ingress-state-sample
 spec:
-  # TODO(user): Add fields here
+  fixedResponse:
+    status: 200
+    body: '{"status":"ng"}'

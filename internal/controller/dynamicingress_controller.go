@@ -19,7 +19,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
@@ -112,10 +111,13 @@ func (r *DynamicIngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			if new.Status.LastUpdateTime == nil {
 				return false
 			}
-			return old.Status.LastUpdateTime.Equal(new.Status.LastUpdateTime)
+			if old.Status.LastUpdateTime == nil {
+				return true
+			}
+			return !old.Status.LastUpdateTime.Equal(new.Status.LastUpdateTime)
 		},
 		CreateFunc: func(e event.CreateEvent) bool {
-			return true
+			return false
 		},
 	}
 
@@ -162,13 +164,13 @@ func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamic
 
 	target := dynamicIngress.Spec.Target
 
-	isActive, err := r.checkConditions(ctx)
+	isActive, err := r.checkConditions(ctx, dynamicIngress)
 	if err != nil {
 		return err
 	}
 
 	if isActive {
-		err = r.applyIngress(ctx, target, &dynamicIngress.Spec.ActiveIngress.Template)
+		err = r.applyIngress(ctx, target, dynamicIngress.Spec.ActiveIngress)
 		if err != nil {
 			logger.Error(err, fmt.Sprintf("unable to apply active ingress (name=%s, namespace=%s)", target.Name, target.Name))
 			return err
@@ -176,7 +178,7 @@ func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamic
 
 		logger.Info(fmt.Sprintf("succeeded apply active ingress (name=%s, namespace=%s)", target.Name, target.Name))
 	} else {
-		err = r.applyIngress(ctx, target, &dynamicIngress.Spec.ActiveIngress.Template)
+		err = r.applyIngress(ctx, target, dynamicIngress.Spec.PassiveIngress)
 		if err != nil {
 			logger.Error(err, fmt.Sprintf("unable to apply passive ingress (name=%s, namespace=%s)", target.Name, target.Name))
 			return err
@@ -191,7 +193,7 @@ func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamic
 func (r *DynamicIngressReconciler) applyIngress(
 	ctx context.Context,
 	target ingressv1.DynamicIngressTarget,
-	ingressTemplate *ingressv1.DynamicIngressTargetIngressTemplate,
+	ingressTemplate *ingressv1.DynamicIngressTemplate,
 ) error {
 	logger := log.FromContext(ctx)
 
@@ -203,9 +205,9 @@ func (r *DynamicIngressReconciler) applyIngress(
 		logger.V(DEBUG).Info(fmt.Sprintf("start createOrUpdate ingress (name=%s, namespace=%s)", ingress.Name, ingress.Namespace))
 
 		op, err := ctrl.CreateOrUpdate(ctx, r.Client, ingress, func() error {
-			ingress.Spec = ingressTemplate.Spec
-			ingress.Annotations = ingressTemplate.Metadata.Annotations
-			ingress.Labels = ingressTemplate.Metadata.Labels
+			ingress.Spec = ingressTemplate.Template.Spec
+			ingress.Annotations = ingressTemplate.Template.Metadata.Annotations
+			ingress.Labels = ingressTemplate.Template.Metadata.Labels
 			return nil
 		})
 
@@ -250,12 +252,56 @@ func (r *DynamicIngressReconciler) applyIngress(
 	return nil
 }
 
-func (r *DynamicIngressReconciler) checkConditions(ctx context.Context) (bool, error) {
-	// TODO: check watcher status
-	_, minutes, _ := time.Now().Clock()
-	if minutes%2 == 0 {
-		return true, nil
+func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicIngress ingressv1.DynamicIngress) (bool, error) {
+	logger := log.FromContext(ctx)
+
+	var dynamicIngressState ingressv1.DynamicIngressState
+	err := r.Get(ctx, client.ObjectKey{Name: dynamicIngress.Spec.State}, &dynamicIngressState)
+
+	// TODO: refactoring
+	if err != nil {
+		logger.Error(err, "unable to get DynamicIngressState", "name", dynamicIngress.Spec.State)
+
+		if dynamicIngress.Spec.ErrorPolicy == "active" {
+			return true, nil
+		} else if dynamicIngress.Spec.ErrorPolicy == "passive" {
+			return false, nil
+		} else if dynamicIngress.Spec.ErrorPolicy == "retain" {
+			return false, err
+		}
+
+		return false, err
 	}
 
-	return false, nil
+	// TODO: refactoring
+	if dynamicIngressState.Status.Response.Status != dynamicIngress.Spec.Expected.Status {
+		err = fmt.Errorf(
+			"[DynamicIngress] Failed status state. namespace=%s, name=%s, actual=%d, expected=%d",
+			dynamicIngress.Namespace,
+			dynamicIngress.Name,
+			dynamicIngressState.Status.Response.Status,
+			dynamicIngress.Spec.Expected.Status,
+		)
+
+		if dynamicIngress.Spec.ErrorPolicy == "active" {
+			return true, nil
+		} else if dynamicIngress.Spec.ErrorPolicy == "passive" {
+			return false, nil
+		} else if dynamicIngress.Spec.ErrorPolicy == "retain" {
+			return false, err
+		}
+
+		return false, err
+	}
+	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngress] wwwww = %s", dynamicIngressState.Status.Response.Body))
+	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngress] wwwww = %s", dynamicIngress.Spec.Expected.Body))
+
+	if dynamicIngressState.Status.Response.Body != dynamicIngress.Spec.Expected.Body {
+		logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngress] isPassive. namespace=%s, name=%s", dynamicIngress.Namespace, dynamicIngress.Name))
+		// TODO: support policy
+		return false, nil
+	}
+
+	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngress] isActive. namespace=%s, name=%s", dynamicIngress.Namespace, dynamicIngress.Name))
+	return true, nil
 }

@@ -35,10 +35,18 @@ spec:
           spec:
             description: DynamicIngressStateSpec defines the desired state of DynamicIngressState
             properties:
-              foo:
-                description: Foo is an example field of DynamicIngressState. Edit
-                  dynamicingressstate_types.go to remove/update
-                type: string
+              fixedResponse:
+                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  Important: Run "make" to regenerate code after modifying this file'
+                properties:
+                  body:
+                    type: string
+                  status:
+                    type: integer
+                required:
+                - body
+                - status
+                type: object
             type: object
           status:
             description: DynamicIngressStateStatus defines the observed state of DynamicIngressState
@@ -49,6 +57,16 @@ spec:
                   this file'
                 format: date-time
                 type: string
+              response:
+                properties:
+                  body:
+                    type: string
+                  status:
+                    type: integer
+                required:
+                - body
+                - status
+                type: object
             type: object
         type: object
     served: true

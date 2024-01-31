@@ -27,16 +27,20 @@ import (
 type DynamicIngressStateSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	FixedResponse *DynamicIngressStateResponse `json:"fixedResponse,omitempty"`
+}
 
-	// Foo is an example field of DynamicIngressState. Edit dynamicingressstate_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+type DynamicIngressStateResponse struct {
+	Status int    `json:"status"`
+	Body   string `json:"body"`
 }
 
 // DynamicIngressStateStatus defines the observed state of DynamicIngressState
 type DynamicIngressStateStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	LastUpdateTime *metav1.Time `json:"lastUpdateTime,omitempty"`
+	LastUpdateTime *metav1.Time                 `json:"lastUpdateTime,omitempty"`
+	Response       *DynamicIngressStateResponse `json:"response,omitempty"`
 }
 
 //+kubebuilder:object:root=true
