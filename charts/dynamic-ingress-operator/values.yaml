@@ -31,8 +31,7 @@ controllerManager:
         drop:
         - ALL
     image:
-      repository: controller
-      tag: latest
+      repository: ghcr.io/toro-ponz/dynamic-ingress-operator
     imagePullPolicy: IfNotPresent
     resources:
       limits:
