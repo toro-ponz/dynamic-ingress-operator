@@ -38,6 +38,7 @@ spec:
   expected:
     status: '200'
     body: '{"status":"maintenance"}'
+    compareType: json
     policy: contains
   errorPolicy: retain
 ```

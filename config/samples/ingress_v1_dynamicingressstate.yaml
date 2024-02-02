@@ -11,4 +11,8 @@ metadata:
 spec:
   fixedResponse:
     status: 200
-    body: '{"status":"ng"}'
+    body: |
+      {
+        "status":"maintenance",
+        "time":"2024-01-01 10:00:00"
+      }

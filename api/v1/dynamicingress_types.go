@@ -83,9 +83,9 @@ type DynamicIngressTarget struct {
 }
 
 type DynamicIngressExpected struct {
-	Status int `json:"status"`
-	// +optional
-	Body string `json:"body"`
+	Status      int    `json:"status"`
+	Body        string `json:"body"`
+	CompareType string `json:"compareType"`
 	// +kubebuilder:default=strict
 	// +optional
 	Policy string `json:"policy,omitempty"`

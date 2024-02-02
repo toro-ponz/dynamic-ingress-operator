@@ -3,6 +3,7 @@ module github.com/toro-ponz/dynamic-ingress-operator
 go 1.21
 
 require (
+	github.com/nsf/jsondiff v0.0.0-20230430225905-43f6cf3098c1
 	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.10
 	k8s.io/api v0.28.3

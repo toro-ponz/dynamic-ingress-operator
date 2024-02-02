@@ -43,6 +43,8 @@ spec:
   expected:
     status: 200
     body: '{"status":"maintenance"}'
+    compareType: json
+    # policy: plaintext
     policy: contains
     # policy: strict
   errorPolicy: retain

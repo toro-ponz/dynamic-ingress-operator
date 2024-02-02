@@ -361,12 +361,16 @@ spec:
                 properties:
                   body:
                     type: string
+                  compareType:
+                    type: string
                   policy:
                     default: strict
                     type: string
                   status:
                     type: integer
                 required:
+                - body
+                - compareType
                 - status
                 type: object
               passiveIngress:

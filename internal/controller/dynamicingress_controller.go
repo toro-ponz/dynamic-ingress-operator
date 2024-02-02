@@ -19,7 +19,9 @@ package controller
 import (
 	"context"
 	"fmt"
+	"strings"
 
+	"github.com/nsf/jsondiff"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -293,15 +295,37 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 
 		return false, err
 	}
-	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngress] wwwww = %s", dynamicIngressState.Status.Response.Body))
-	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngress] wwwww = %s", dynamicIngress.Spec.Expected.Body))
 
-	if dynamicIngressState.Status.Response.Body != dynamicIngress.Spec.Expected.Body {
-		logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngress] isPassive. namespace=%s, name=%s", dynamicIngress.Namespace, dynamicIngress.Name))
-		// TODO: support policy
-		return false, nil
+	if dynamicIngress.Spec.Expected.CompareType == "json" {
+		// json compare
+		diffOpts := jsondiff.DefaultJSONOptions()
+		res, _ := jsondiff.Compare([]byte(dynamicIngressState.Status.Response.Body), []byte(dynamicIngress.Spec.Expected.Body), &diffOpts)
+		logger.Info(fmt.Sprintf("[DynamicIngress] JSON Diff %s", res))
+		if res == jsondiff.FullMatch {
+			return true, nil
+		} else if res == jsondiff.NoMatch {
+			return false, nil
+		} else if res == jsondiff.SupersetMatch {
+			if dynamicIngress.Spec.Expected.Policy == "contains" {
+				return true, nil
+			} else {
+				return false, nil
+			}
+		}
+
+		return false, fmt.Errorf("[DynamicIngress] JSON Compare error. %s", res)
+	} else if dynamicIngress.Spec.Expected.CompareType == "plaintext" {
+		// plain text compare
+		if dynamicIngressState.Status.Response.Body == dynamicIngress.Spec.Expected.Body {
+			return true, nil
+		}
+
+		if dynamicIngress.Spec.Expected.Policy == "contains" {
+			return strings.Contains(dynamicIngressState.Status.Response.Body, dynamicIngress.Spec.Expected.Body), nil
+		} else {
+			return false, nil
+		}
 	}
 
-	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngress] isActive. namespace=%s, name=%s", dynamicIngress.Namespace, dynamicIngress.Name))
-	return true, nil
+	return false, fmt.Errorf("[DynamicIngress] invalid compare type %s", dynamicIngress.Spec.Expected.CompareType)
 }
