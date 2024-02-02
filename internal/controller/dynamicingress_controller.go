@@ -297,6 +297,8 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 		return false, err
 	}
 
+	logger.Info(fmt.Sprintf("[DynamicIngress] Compare %s %s", dynamicIngressState.Status.Response.Body, dynamicIngress.Spec.Expected.Body))
+
 	if dynamicIngress.Spec.Expected.CompareType == "json" {
 		// json compare
 		diffOpts := jsondiff.DefaultJSONOptions()

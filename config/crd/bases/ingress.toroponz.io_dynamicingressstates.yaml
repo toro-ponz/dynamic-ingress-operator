@@ -47,6 +47,19 @@ spec:
                 - body
                 - status
                 type: object
+              probe:
+                properties:
+                  method:
+                    type: string
+                  type:
+                    type: string
+                  url:
+                    type: string
+                required:
+                - method
+                - type
+                - url
+                type: object
             type: object
           status:
             description: DynamicIngressStateStatus defines the observed state of DynamicIngressState

@@ -19,6 +19,8 @@ package controller
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -26,7 +28,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	ingressv1 "github.com/toro-ponz/dynamic-ingress-operator/api/v1"
 )
@@ -52,6 +58,7 @@ type DynamicIngressStateReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *DynamicIngressStateReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
+	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] Reconcile"))
 
 	var dynamicIngressState ingressv1.DynamicIngressState
 	err := r.Get(ctx, req.NamespacedName, &dynamicIngressState)
@@ -78,16 +85,69 @@ func (r *DynamicIngressStateReconciler) Reconcile(ctx context.Context, req ctrl.
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *DynamicIngressStateReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	events := make(chan event.GenericEvent)
+	source := source.Channel{
+		Source:         events,
+		DestBufferSize: 0,
+	}
+
+	interval, err := time.ParseDuration("10s")
+	if err != nil {
+		return err
+	}
+
+	err = mgr.Add(&ticker{
+		events:   events,
+		interval: interval,
+	})
+	if err != nil {
+		return err
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&ingressv1.DynamicIngressState{}).
+		WatchesRawSource(&source, handler.EnqueueRequestsFromMapFunc(r.findList)).
 		Complete(r)
+}
+
+func (r *DynamicIngressStateReconciler) findList(ctx context.Context, _ client.Object) []reconcile.Request {
+	logger := log.FromContext(ctx)
+	logger.Info(fmt.Sprintf("[DynamicIngressState] findList"))
+
+	dynamicIngressstates := ingressv1.DynamicIngressStateList{}
+	err := r.List(ctx, &dynamicIngressstates)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	var requests []reconcile.Request
+	for _, dynamicIngressstate := range dynamicIngressstates.Items {
+		requests = append(requests, reconcile.Request{
+			NamespacedName: client.ObjectKey{Name: dynamicIngressstate.Name},
+		})
+	}
+
+	return requests
 }
 
 func (r *DynamicIngressStateReconciler) reconcileIngressState(ctx context.Context, dynamicIngressState ingressv1.DynamicIngressState) error {
 	logger := log.FromContext(ctx)
 
 	if dynamicIngressState.Spec.FixedResponse != nil {
+		if dynamicIngressState.Status.Response == dynamicIngressState.Spec.FixedResponse {
+			logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] skip update fixedResponse name=%s", dynamicIngressState.Name))
+			return nil
+		}
 		dynamicIngressState.Status.Response = dynamicIngressState.Spec.FixedResponse
+	} else if dynamicIngressState.Spec.Probe != nil {
+		response, err := r.probe(ctx, *dynamicIngressState.Spec.Probe)
+		if err != nil {
+			logger.Error(err, fmt.Sprintf("[DynamicIngressState] Probe error name=%s", dynamicIngressState.Name))
+			return err
+		}
+		dynamicIngressState.Status.Response = response
+	} else {
+		return fmt.Errorf("[DynamicIngressState] Need fixedResponse or probe name=%s", dynamicIngressState.Name)
 	}
 
 	now := &v1.Time{Time: time.Now()}
@@ -100,4 +160,59 @@ func (r *DynamicIngressStateReconciler) reconcileIngressState(ctx context.Contex
 	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] reconcileIngressState name=%s, lastUpdateTime=%s", dynamicIngressState.Name, now))
 
 	return nil
+}
+
+func (r *DynamicIngressStateReconciler) probe(ctx context.Context, probe ingressv1.DynamicIngressStateProbe) (*ingressv1.DynamicIngressStateResponse, error) {
+	logger := log.FromContext(ctx)
+	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] Do Probe %v", probe))
+
+	if probe.Type != "HTTP" {
+		return nil, fmt.Errorf("[DynamicIngressState] Probe type is HTTP only")
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest(probe.Method, probe.Url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ingressv1.DynamicIngressStateResponse{
+		Status: resp.StatusCode,
+		Body:   string(body),
+	}, nil
+}
+
+type ticker struct {
+	events chan event.GenericEvent
+
+	interval time.Duration
+}
+
+func (t *ticker) Start(ctx context.Context) error {
+	ticker := time.NewTicker(t.interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+			t.events <- event.GenericEvent{}
+		}
+	}
+}
+
+func (t *ticker) NeedLeaderElection() bool {
+	return true
 }

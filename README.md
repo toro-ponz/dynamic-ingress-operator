@@ -75,5 +75,4 @@ spec:
     type: HTTP
     method: GET
     url: https://api.toroponz.io/status
-    interval: 60s
 ```

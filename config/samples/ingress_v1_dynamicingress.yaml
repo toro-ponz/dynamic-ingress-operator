@@ -42,7 +42,7 @@ spec:
   state: dynamic-ingress-state-sample
   expected:
     status: 200
-    body: '{"status":"maintenance"}'
+    body: '{"status":"ok"}'
     compareType: json
     # policy: plaintext
     policy: contains

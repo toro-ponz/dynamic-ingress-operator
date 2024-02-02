@@ -28,11 +28,18 @@ type DynamicIngressStateSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	FixedResponse *DynamicIngressStateResponse `json:"fixedResponse,omitempty"`
+	Probe         *DynamicIngressStateProbe    `json:"probe,omitempty"`
 }
 
 type DynamicIngressStateResponse struct {
 	Status int    `json:"status"`
 	Body   string `json:"body"`
+}
+
+type DynamicIngressStateProbe struct {
+	Type   string `json:"type"`
+	Method string `json:"method"`
+	Url    string `json:"url"`
 }
 
 // DynamicIngressStateStatus defines the observed state of DynamicIngressState
