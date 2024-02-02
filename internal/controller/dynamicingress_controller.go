@@ -172,7 +172,7 @@ func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamic
 	}
 
 	if isActive {
-		err = r.applyIngress(ctx, target, dynamicIngress.Spec.ActiveIngress)
+		err = r.applyIngress(ctx, dynamicIngress, target, dynamicIngress.Spec.ActiveIngress)
 		if err != nil {
 			logger.Error(err, fmt.Sprintf("unable to apply active ingress (name=%s, namespace=%s)", target.Name, target.Name))
 			return err
@@ -180,7 +180,7 @@ func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamic
 
 		logger.Info(fmt.Sprintf("succeeded apply active ingress (name=%s, namespace=%s)", target.Name, target.Name))
 	} else {
-		err = r.applyIngress(ctx, target, dynamicIngress.Spec.PassiveIngress)
+		err = r.applyIngress(ctx, dynamicIngress, target, dynamicIngress.Spec.PassiveIngress)
 		if err != nil {
 			logger.Error(err, fmt.Sprintf("unable to apply passive ingress (name=%s, namespace=%s)", target.Name, target.Name))
 			return err
@@ -194,6 +194,7 @@ func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamic
 
 func (r *DynamicIngressReconciler) applyIngress(
 	ctx context.Context,
+	dynamicIngress ingressv1.DynamicIngress,
 	target ingressv1.DynamicIngressTarget,
 	ingressTemplate *ingressv1.DynamicIngressTemplate,
 ) error {
@@ -210,7 +211,7 @@ func (r *DynamicIngressReconciler) applyIngress(
 			ingress.Spec = ingressTemplate.Template.Spec
 			ingress.Annotations = ingressTemplate.Template.Metadata.Annotations
 			ingress.Labels = ingressTemplate.Template.Metadata.Labels
-			return nil
+			return ctrl.SetControllerReference(&dynamicIngress, ingress, r.Scheme)
 		})
 
 		if err != nil {
