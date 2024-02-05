@@ -29,7 +29,7 @@ type DynamicIngressSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Target DynamicIngressTarget `json:"target"`
+	Target string `json:"target"`
 	// +optional
 	PassiveIngress *DynamicIngressTemplate `json:"passiveIngress,omitempty"`
 	// +optional
@@ -85,11 +85,6 @@ type DynamicIngressTargetIngressTemplate struct {
 type DynamicIngressTargetIngressTemplateMetadata struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
-}
-
-type DynamicIngressTarget struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
 }
 
 type DynamicIngressExpected struct {

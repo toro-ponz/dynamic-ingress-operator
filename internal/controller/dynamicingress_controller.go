@@ -174,19 +174,19 @@ func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamic
 	if isActive {
 		err = r.applyIngress(ctx, dynamicIngress, target, dynamicIngress.Spec.ActiveIngress)
 		if err != nil {
-			logger.Error(err, fmt.Sprintf("unable to apply active ingress (name=%s, namespace=%s)", target.Name, target.Name))
+			logger.Error(err, fmt.Sprintf("unable to apply active ingress (name=%s, namespace=%s)", target, dynamicIngress.Namespace))
 			return err
 		}
 
-		logger.Info(fmt.Sprintf("succeeded apply active ingress (name=%s, namespace=%s)", target.Name, target.Name))
+		logger.Info(fmt.Sprintf("succeeded apply active ingress (name=%s, namespace=%s)", target, dynamicIngress.Namespace))
 	} else {
 		err = r.applyIngress(ctx, dynamicIngress, target, dynamicIngress.Spec.PassiveIngress)
 		if err != nil {
-			logger.Error(err, fmt.Sprintf("unable to apply passive ingress (name=%s, namespace=%s)", target.Name, target.Name))
+			logger.Error(err, fmt.Sprintf("unable to apply passive ingress (name=%s, namespace=%s)", target, dynamicIngress.Namespace))
 			return err
 		}
 
-		logger.Info(fmt.Sprintf("succeeded apply passive ingress (name=%s, namespace=%s)", target.Name, target.Name))
+		logger.Info(fmt.Sprintf("succeeded apply passive ingress (name=%s, namespace=%s)", target, dynamicIngress.Namespace))
 	}
 
 	return nil
@@ -195,14 +195,14 @@ func (r *DynamicIngressReconciler) reconcileIngress(ctx context.Context, dynamic
 func (r *DynamicIngressReconciler) applyIngress(
 	ctx context.Context,
 	dynamicIngress ingressv1.DynamicIngress,
-	target ingressv1.DynamicIngressTarget,
+	target string,
 	ingressTemplate *ingressv1.DynamicIngressTemplate,
 ) error {
 	logger := log.FromContext(ctx)
 
 	ingress := &networkingv1.Ingress{}
-	ingress.SetName(target.Name)
-	ingress.SetNamespace(target.Namespace)
+	ingress.SetName(target)
+	ingress.SetNamespace(dynamicIngress.Namespace)
 
 	if ingressTemplate != nil {
 		logger.V(DEBUG).Info(fmt.Sprintf("start createOrUpdate ingress (name=%s, namespace=%s)", ingress.Name, ingress.Namespace))

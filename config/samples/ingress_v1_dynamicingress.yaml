@@ -10,9 +10,7 @@ metadata:
   name: dynamic-ingress-sample
   namespace: dynamic-ingress-operator-system
 spec:
-  target:
-    name: test
-    namespace: dynamic-ingress-operator-system
+  target: dynamic-created-ingress
   passiveIngress: null
     # template:
     #   metadata:
