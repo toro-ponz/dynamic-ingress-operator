@@ -11,6 +11,8 @@ spec:
     kind: DynamicIngressState
     listKind: DynamicIngressStateList
     plural: dynamicingressstates
+    shortNames:
+    - dis
     singular: dynamicingressstate
   scope: Cluster
   versions:

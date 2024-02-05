@@ -11,6 +11,8 @@ spec:
     kind: DynamicIngress
     listKind: DynamicIngressList
     plural: dynamicingresses
+    shortNames:
+    - di
     singular: dynamicingress
   scope: Namespaced
   versions:

@@ -112,6 +112,7 @@ const (
 )
 
 //+kubebuilder:object:root=true
+//+kubebuilder:resource:scope=Namespaced,shortName=di
 //+kubebuilder:subresource:status
 //+kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.value"
 
