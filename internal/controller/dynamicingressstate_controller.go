@@ -166,10 +166,6 @@ func (r *DynamicIngressStateReconciler) probe(ctx context.Context, probe ingress
 	logger := log.FromContext(ctx)
 	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] Do Probe %v", probe))
 
-	if probe.Type != "HTTP" {
-		return nil, fmt.Errorf("[DynamicIngressState] Probe type is HTTP only")
-	}
-
 	client := &http.Client{}
 	req, err := http.NewRequest(probe.Method, probe.Url, nil)
 	if err != nil {

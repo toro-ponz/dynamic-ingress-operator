@@ -51,6 +51,8 @@ spec:
                   method:
                     type: string
                   type:
+                    enum:
+                    - HTTP
                     type: string
                   url:
                     type: string

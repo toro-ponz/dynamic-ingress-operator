@@ -44,9 +44,9 @@ spec:
     status: 200
     body: '{"status":"ok"}'
     compareType: json
-    # policy: plaintext
-    policy: contains
-    # policy: strict
+    # compareType: plaintext
+    comparePolicy: contains
+    # comparePolicy: strict
   errorPolicy: retain
   # errorPolicy: passive
   # errorPolicy: active

@@ -39,7 +39,7 @@ spec:
     status: '200'
     body: '{"status":"maintenance"}'
     compareType: json
-    policy: contains
+    comparePolicy: contains
   errorPolicy: retain
 ```
 

@@ -29,15 +29,25 @@ type DynamicIngressSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Target         DynamicIngressTarget    `json:"target"`
-	PassiveIngress *DynamicIngressTemplate `json:"passiveIngress,omitempty"`
-	ActiveIngress  *DynamicIngressTemplate `json:"activeIngress,omitempty"`
-	State          string                  `json:"state"`
-	Expected       DynamicIngressExpected  `json:"expected"`
-	// +kubebuilder:default=retain
+	Target DynamicIngressTarget `json:"target"`
 	// +optional
-	ErrorPolicy string `json:"errorPolicy,omitempty"`
+	PassiveIngress *DynamicIngressTemplate `json:"passiveIngress,omitempty"`
+	// +optional
+	ActiveIngress *DynamicIngressTemplate `json:"activeIngress,omitempty"`
+	State         string                  `json:"state"`
+	Expected      DynamicIngressExpected  `json:"expected"`
+	// +kubebuilder:default=retain
+	ErrorPolicy ErrorPolicy `json:"errorPolicy,omitempty"`
 }
+
+// +kubebuilder:validation:Enum=retain;passive;active
+type ErrorPolicy string
+
+const (
+	ErrorPolicyRetain  ErrorPolicy = "retain"
+	ErrorPolicyPassive ErrorPolicy = "passive"
+	ErrorPolicyActive  ErrorPolicy = "active"
+)
 
 // DynamicIngressStatus defines the observed state of DynamicIngress
 type DynamicIngressStatus struct {
@@ -83,13 +93,28 @@ type DynamicIngressTarget struct {
 }
 
 type DynamicIngressExpected struct {
-	Status      int    `json:"status"`
-	Body        string `json:"body"`
-	CompareType string `json:"compareType"`
+	Status      int         `json:"status"`
+	Body        string      `json:"body"`
+	CompareType CompareType `json:"compareType"`
 	// +kubebuilder:default=strict
-	// +optional
-	Policy string `json:"policy,omitempty"`
+	ComparePolicy ComparePolicy `json:"comparePolicy"`
 }
+
+// +kubebuilder:validation:Enum=plaintext;json
+type CompareType string
+
+const (
+	CompareTypePlaintext CompareType = "plaintext"
+	CompareTypeJson      CompareType = "json"
+)
+
+// +kubebuilder:validation:Enum=strict;contains
+type ComparePolicy string
+
+const (
+	ComparePolicyStrict   ComparePolicy = "strict"
+	ComparePolicyContains ComparePolicy = "contains"
+)
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status

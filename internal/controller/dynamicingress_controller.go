@@ -265,11 +265,11 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 	if err != nil {
 		logger.Error(err, "unable to get DynamicIngressState", "name", dynamicIngress.Spec.State)
 
-		if dynamicIngress.Spec.ErrorPolicy == "active" {
+		if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyActive {
 			return true, nil
-		} else if dynamicIngress.Spec.ErrorPolicy == "passive" {
+		} else if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyPassive {
 			return false, nil
-		} else if dynamicIngress.Spec.ErrorPolicy == "retain" {
+		} else if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyRetain {
 			return false, err
 		}
 
@@ -286,11 +286,11 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 			dynamicIngress.Spec.Expected.Status,
 		)
 
-		if dynamicIngress.Spec.ErrorPolicy == "active" {
+		if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyActive {
 			return true, nil
-		} else if dynamicIngress.Spec.ErrorPolicy == "passive" {
+		} else if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyPassive {
 			return false, nil
-		} else if dynamicIngress.Spec.ErrorPolicy == "retain" {
+		} else if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyRetain {
 			return false, err
 		}
 
@@ -299,7 +299,7 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 
 	logger.Info(fmt.Sprintf("[DynamicIngress] Compare %s %s", dynamicIngressState.Status.Response.Body, dynamicIngress.Spec.Expected.Body))
 
-	if dynamicIngress.Spec.Expected.CompareType == "json" {
+	if dynamicIngress.Spec.Expected.CompareType == ingressv1.CompareTypeJson {
 		// json compare
 		diffOpts := jsondiff.DefaultJSONOptions()
 		res, _ := jsondiff.Compare([]byte(dynamicIngressState.Status.Response.Body), []byte(dynamicIngress.Spec.Expected.Body), &diffOpts)
@@ -309,7 +309,7 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 		} else if res == jsondiff.NoMatch {
 			return false, nil
 		} else if res == jsondiff.SupersetMatch {
-			if dynamicIngress.Spec.Expected.Policy == "contains" {
+			if dynamicIngress.Spec.Expected.ComparePolicy == ingressv1.ComparePolicyContains {
 				return true, nil
 			} else {
 				return false, nil
@@ -317,13 +317,13 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 		}
 
 		return false, fmt.Errorf("[DynamicIngress] JSON Compare error. %s", res)
-	} else if dynamicIngress.Spec.Expected.CompareType == "plaintext" {
+	} else if dynamicIngress.Spec.Expected.CompareType == ingressv1.CompareTypePlaintext {
 		// plain text compare
 		if dynamicIngressState.Status.Response.Body == dynamicIngress.Spec.Expected.Body {
 			return true, nil
 		}
 
-		if dynamicIngress.Spec.Expected.Policy == "contains" {
+		if dynamicIngress.Spec.Expected.ComparePolicy == ingressv1.ComparePolicyContains {
 			return strings.Contains(dynamicIngressState.Status.Response.Body, dynamicIngress.Spec.Expected.Body), nil
 		} else {
 			return false, nil

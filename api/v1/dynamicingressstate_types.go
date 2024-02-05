@@ -37,10 +37,17 @@ type DynamicIngressStateResponse struct {
 }
 
 type DynamicIngressStateProbe struct {
-	Type   string `json:"type"`
-	Method string `json:"method"`
-	Url    string `json:"url"`
+	Type   ProbeType `json:"type"`
+	Method string    `json:"method"`
+	Url    string    `json:"url"`
 }
+
+// +kubebuilder:validation:Enum=HTTP
+type ProbeType string
+
+const (
+	ProbeTypeHTTP ProbeType = "HTTP"
+)
 
 // DynamicIngressStateStatus defines the observed state of DynamicIngressState
 type DynamicIngressStateStatus struct {

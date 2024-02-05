@@ -357,20 +357,31 @@ spec:
                 type: object
               errorPolicy:
                 default: retain
+                enum:
+                - retain
+                - passive
+                - active
                 type: string
               expected:
                 properties:
                   body:
                     type: string
-                  compareType:
-                    type: string
-                  policy:
+                  comparePolicy:
                     default: strict
+                    enum:
+                    - strict
+                    - contains
+                    type: string
+                  compareType:
+                    enum:
+                    - plaintext
+                    - json
                     type: string
                   status:
                     type: integer
                 required:
                 - body
+                - comparePolicy
                 - compareType
                 - status
                 type: object
