@@ -17,8 +17,14 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .spec.state
+      name: STATE
+      type: string
     - jsonPath: .status.value
       name: STATUS
+      type: string
+    - jsonPath: .status.condition
+      name: CONDITION
       type: string
     name: v1
     schema:

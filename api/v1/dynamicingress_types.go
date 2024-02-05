@@ -60,17 +60,16 @@ type DynamicIngressStatus struct {
 type DynamicIngressStatusValue string
 
 const (
-	DynamicIngressNotReady  = DynamicIngressStatusValue("NotReady")
-	DynamicIngressHealthy   = DynamicIngressStatusValue("Healthy")
-	DynamicIngressUnhealthy = DynamicIngressStatusValue("Unhealthy")
+	DynamicIngressHealthy DynamicIngressStatusValue = "Healthy"
+	DynamicIngressError   DynamicIngressStatusValue = "Error"
 )
 
 type DynamicIngressStatusCondition string
 
 const (
-	False = DynamicIngressStatusCondition("False")
-	True  = DynamicIngressStatusCondition("True")
-	Error = DynamicIngressStatusCondition("Error")
+	DynamicIngressStatusConditionPassive DynamicIngressStatusCondition = "Passive"
+	DynamicIngressStatusConditionActive  DynamicIngressStatusCondition = "Active"
+	DynamicIngressStatusConditionError   DynamicIngressStatusCondition = "Error"
 )
 
 type DynamicIngressTemplate struct {
@@ -114,15 +113,17 @@ const (
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:scope=Namespaced,shortName=di
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".spec.state"
 //+kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.value"
+//+kubebuilder:printcolumn:name="CONDITION",type="string",JSONPath=".status.condition"
 
 // DynamicIngress is the Schema for the dynamicingresses API
 type DynamicIngress struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   DynamicIngressSpec   `json:"spec,omitempty"`
-	Status DynamicIngressStatus `json:"status,omitempty"`
+	Spec   DynamicIngressSpec    `json:"spec,omitempty"`
+	Status *DynamicIngressStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true

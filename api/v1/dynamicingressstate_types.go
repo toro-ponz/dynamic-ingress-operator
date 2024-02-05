@@ -53,21 +53,33 @@ const (
 type DynamicIngressStateStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	LastUpdateTime *metav1.Time                 `json:"lastUpdateTime,omitempty"`
-	Response       *DynamicIngressStateResponse `json:"response,omitempty"`
+	Value          DynamicIngressStateStatusValue `json:"value"`
+	Response       *DynamicIngressStateResponse   `json:"response"`
+	LastUpdateTime metav1.Time                    `json:"lastUpdateTime"`
 }
+
+// +kubebuilder:validation:Enum=Healthy;Error
+type DynamicIngressStateStatusValue string
+
+const (
+	DynamicIngressStateStatusValueHealthy DynamicIngressStateStatusValue = "Healthy"
+	DynamicIngressStateStatusValueError   DynamicIngressStateStatusValue = "Error"
+)
 
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:scope=Cluster,shortName=dis
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="STATUS",type="string",JSONPath=".status.value"
+//+kubebuilder:printcolumn:name="RESPONSE CODE",type="integer",JSONPath=".status.response.status"
+//+kubebuilder:printcolumn:name="LAST UPDATE",type="string",JSONPath=".status.lastUpdateTime"
 
 // DynamicIngressState is the Schema for the dynamicingressstates API
 type DynamicIngressState struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   DynamicIngressStateSpec   `json:"spec,omitempty"`
-	Status DynamicIngressStateStatus `json:"status,omitempty"`
+	Spec   DynamicIngressStateSpec    `json:"spec,omitempty"`
+	Status *DynamicIngressStateStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true

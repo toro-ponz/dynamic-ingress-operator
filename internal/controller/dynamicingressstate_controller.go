@@ -133,33 +133,47 @@ func (r *DynamicIngressStateReconciler) findList(ctx context.Context, _ client.O
 func (r *DynamicIngressStateReconciler) reconcileIngressState(ctx context.Context, dynamicIngressState ingressv1.DynamicIngressState) error {
 	logger := log.FromContext(ctx)
 
-	if dynamicIngressState.Spec.FixedResponse != nil {
-		if dynamicIngressState.Status.Response == dynamicIngressState.Spec.FixedResponse {
-			logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] skip update fixedResponse name=%s", dynamicIngressState.Name))
-			return nil
-		}
-		dynamicIngressState.Status.Response = dynamicIngressState.Spec.FixedResponse
-	} else if dynamicIngressState.Spec.Probe != nil {
-		response, err := r.probe(ctx, *dynamicIngressState.Spec.Probe)
-		if err != nil {
-			logger.Error(err, fmt.Sprintf("[DynamicIngressState] Probe error name=%s", dynamicIngressState.Name))
-			return err
-		}
-		dynamicIngressState.Status.Response = response
+	response, err := r.getResponse(ctx, dynamicIngressState)
+	if err != nil {
+		dynamicIngressState.Status.Value = ingressv1.DynamicIngressStateStatusValueError
+		dynamicIngressState.Status.Response = nil
+		logger.Error(err, fmt.Sprintf("[DynamicIngressState] getResponse Error name=%s", dynamicIngressState.Name))
 	} else {
-		return fmt.Errorf("[DynamicIngressState] Need fixedResponse or probe name=%s", dynamicIngressState.Name)
+		dynamicIngressState.Status.Value = ingressv1.DynamicIngressStateStatusValueHealthy
+		dynamicIngressState.Status.Response = response
 	}
 
-	now := &v1.Time{Time: time.Now()}
+	now := v1.Time{Time: time.Now()}
 	dynamicIngressState.Status.LastUpdateTime = now
-	err := r.Status().Update(ctx, &dynamicIngressState)
+	err = r.Status().Update(ctx, &dynamicIngressState)
 	if err != nil {
 		return err
 	}
 
-	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] reconcileIngressState name=%s, lastUpdateTime=%s", dynamicIngressState.Name, now))
+	logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] reconcileIngressState name=%s, status=%s, lastUpdateTime=%s", dynamicIngressState.Name, dynamicIngressState.Status.Value, now))
 
 	return nil
+}
+
+func (r *DynamicIngressStateReconciler) getResponse(ctx context.Context, dynamicIngressState ingressv1.DynamicIngressState) (*ingressv1.DynamicIngressStateResponse, error) {
+	logger := log.FromContext(ctx)
+
+	if dynamicIngressState.Spec.FixedResponse != nil {
+		if dynamicIngressState.Status.Response == dynamicIngressState.Spec.FixedResponse {
+			logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] skip update fixedResponse name=%s", dynamicIngressState.Name))
+			return nil, nil
+		}
+		return dynamicIngressState.Spec.FixedResponse, nil
+	} else if dynamicIngressState.Spec.Probe != nil {
+		response, err := r.probe(ctx, *dynamicIngressState.Spec.Probe)
+		if err != nil {
+			logger.Error(err, fmt.Sprintf("[DynamicIngressState] Probe error name=%s", dynamicIngressState.Name))
+			return nil, err
+		}
+		return response, nil
+	}
+
+	return nil, fmt.Errorf("[DynamicIngressState] Need fixedResponse or probe name=%s", dynamicIngressState.Name)
 }
 
 func (r *DynamicIngressStateReconciler) probe(ctx context.Context, probe ingressv1.DynamicIngressStateProbe) (*ingressv1.DynamicIngressStateResponse, error) {
