@@ -363,14 +363,7 @@ spec:
                 required:
                 - template
                 type: object
-              errorPolicy:
-                default: retain
-                enum:
-                - retain
-                - passive
-                - active
-                type: string
-              expected:
+              expectedResponse:
                 properties:
                   body:
                     type: string
@@ -385,14 +378,18 @@ spec:
                     - plaintext
                     - json
                     type: string
-                  status:
-                    type: integer
                 required:
                 - body
                 - comparePolicy
                 - compareType
-                - status
                 type: object
+              failPolicy:
+                default: retain
+                enum:
+                - retain
+                - passive
+                - active
+                type: string
               passiveIngress:
                 properties:
                   template:
@@ -712,11 +709,14 @@ spec:
                 type: object
               state:
                 type: string
+              successfulStatus:
+                type: integer
               target:
                 type: string
             required:
-            - expected
+            - expectedResponse
             - state
+            - successfulStatus
             - target
             type: object
           status:

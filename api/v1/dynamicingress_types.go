@@ -33,20 +33,21 @@ type DynamicIngressSpec struct {
 	// +optional
 	PassiveIngress *DynamicIngressTemplate `json:"passiveIngress,omitempty"`
 	// +optional
-	ActiveIngress *DynamicIngressTemplate `json:"activeIngress,omitempty"`
-	State         string                  `json:"state"`
-	Expected      DynamicIngressExpected  `json:"expected"`
+	ActiveIngress    *DynamicIngressTemplate `json:"activeIngress,omitempty"`
+	State            string                  `json:"state"`
+	SuccessfulStatus int                     `json:"successfulStatus"`
 	// +kubebuilder:default=retain
-	ErrorPolicy ErrorPolicy `json:"errorPolicy,omitempty"`
+	FailPolicy       FailPolicy             `json:"failPolicy,omitempty"`
+	ExpectedResponse DynamicIngressExpected `json:"expectedResponse"`
 }
 
 // +kubebuilder:validation:Enum=retain;passive;active
-type ErrorPolicy string
+type FailPolicy string
 
 const (
-	ErrorPolicyRetain  ErrorPolicy = "retain"
-	ErrorPolicyPassive ErrorPolicy = "passive"
-	ErrorPolicyActive  ErrorPolicy = "active"
+	FailPolicyRetain  FailPolicy = "retain"
+	FailPolicyPassive FailPolicy = "passive"
+	FailPolicyActive  FailPolicy = "active"
 )
 
 // DynamicIngressStatus defines the observed state of DynamicIngress
@@ -87,7 +88,6 @@ type DynamicIngressTargetIngressTemplateMetadata struct {
 }
 
 type DynamicIngressExpected struct {
-	Status      int         `json:"status"`
 	Body        string      `json:"body"`
 	CompareType CompareType `json:"compareType"`
 	// +kubebuilder:default=strict

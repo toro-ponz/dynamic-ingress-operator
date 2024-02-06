@@ -275,11 +275,11 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 	if err != nil {
 		logger.Error(err, "unable to get DynamicIngressState", "name", dynamicIngress.Spec.State)
 
-		if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyActive {
+		if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyActive {
 			return ingressv1.DynamicIngressStatusConditionActive, nil
-		} else if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyPassive {
+		} else if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyPassive {
 			return ingressv1.DynamicIngressStatusConditionPassive, nil
-		} else if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyRetain {
+		} else if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyRetain {
 			return ingressv1.DynamicIngressStatusConditionError, err
 		}
 
@@ -287,39 +287,39 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 	}
 
 	// TODO: refactoring
-	if dynamicIngressState.Status.Response.Status != dynamicIngress.Spec.Expected.Status {
+	if dynamicIngressState.Status.Response.Status != dynamicIngress.Spec.SuccessfulStatus {
 		err = fmt.Errorf(
-			"[DynamicIngress] Failed status state. namespace=%s, name=%s, actual=%d, expected=%d",
+			"[DynamicIngress] Failed status state. namespace=%s, name=%s, actual=%d, successfulStatus=%d",
 			dynamicIngress.Namespace,
 			dynamicIngress.Name,
 			dynamicIngressState.Status.Response.Status,
-			dynamicIngress.Spec.Expected.Status,
+			dynamicIngress.Spec.SuccessfulStatus,
 		)
 
-		if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyActive {
+		if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyActive {
 			return ingressv1.DynamicIngressStatusConditionActive, nil
-		} else if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyPassive {
+		} else if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyPassive {
 			return ingressv1.DynamicIngressStatusConditionPassive, nil
-		} else if dynamicIngress.Spec.ErrorPolicy == ingressv1.ErrorPolicyRetain {
+		} else if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyRetain {
 			return ingressv1.DynamicIngressStatusConditionError, err
 		}
 
 		return ingressv1.DynamicIngressStatusConditionError, err
 	}
 
-	logger.Info(fmt.Sprintf("[DynamicIngress] Compare %s %s", dynamicIngressState.Status.Response.Body, dynamicIngress.Spec.Expected.Body))
+	logger.Info(fmt.Sprintf("[DynamicIngress] Compare %s %s", dynamicIngressState.Status.Response.Body, dynamicIngress.Spec.ExpectedResponse.Body))
 
-	if dynamicIngress.Spec.Expected.CompareType == ingressv1.CompareTypeJson {
+	if dynamicIngress.Spec.ExpectedResponse.CompareType == ingressv1.CompareTypeJson {
 		// json compare
 		diffOpts := jsondiff.DefaultJSONOptions()
-		res, _ := jsondiff.Compare([]byte(dynamicIngressState.Status.Response.Body), []byte(dynamicIngress.Spec.Expected.Body), &diffOpts)
+		res, _ := jsondiff.Compare([]byte(dynamicIngressState.Status.Response.Body), []byte(dynamicIngress.Spec.ExpectedResponse.Body), &diffOpts)
 		logger.Info(fmt.Sprintf("[DynamicIngress] JSON Diff %s", res))
 		if res == jsondiff.FullMatch {
 			return ingressv1.DynamicIngressStatusConditionActive, nil
 		} else if res == jsondiff.NoMatch {
 			return ingressv1.DynamicIngressStatusConditionPassive, nil
 		} else if res == jsondiff.SupersetMatch {
-			if dynamicIngress.Spec.Expected.ComparePolicy == ingressv1.ComparePolicyContains {
+			if dynamicIngress.Spec.ExpectedResponse.ComparePolicy == ingressv1.ComparePolicyContains {
 				return ingressv1.DynamicIngressStatusConditionActive, nil
 			} else {
 				return ingressv1.DynamicIngressStatusConditionPassive, nil
@@ -327,14 +327,14 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 		}
 
 		return ingressv1.DynamicIngressStatusConditionError, fmt.Errorf("[DynamicIngress] JSON Compare error. %s", res)
-	} else if dynamicIngress.Spec.Expected.CompareType == ingressv1.CompareTypePlaintext {
+	} else if dynamicIngress.Spec.ExpectedResponse.CompareType == ingressv1.CompareTypePlaintext {
 		// plain text compare
-		if dynamicIngressState.Status.Response.Body == dynamicIngress.Spec.Expected.Body {
+		if dynamicIngressState.Status.Response.Body == dynamicIngress.Spec.ExpectedResponse.Body {
 			return ingressv1.DynamicIngressStatusConditionActive, nil
 		}
 
-		if dynamicIngress.Spec.Expected.ComparePolicy == ingressv1.ComparePolicyContains {
-			if strings.Contains(dynamicIngressState.Status.Response.Body, dynamicIngress.Spec.Expected.Body) {
+		if dynamicIngress.Spec.ExpectedResponse.ComparePolicy == ingressv1.ComparePolicyContains {
+			if strings.Contains(dynamicIngressState.Status.Response.Body, dynamicIngress.Spec.ExpectedResponse.Body) {
 				return ingressv1.DynamicIngressStatusConditionActive, nil
 			} else {
 				return ingressv1.DynamicIngressStatusConditionPassive, nil
@@ -344,5 +344,5 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 		}
 	}
 
-	return ingressv1.DynamicIngressStatusConditionError, fmt.Errorf("[DynamicIngress] invalid compare type %s", dynamicIngress.Spec.Expected.CompareType)
+	return ingressv1.DynamicIngressStatusConditionError, fmt.Errorf("[DynamicIngress] invalid compare type %s", dynamicIngress.Spec.ExpectedResponse.CompareType)
 }

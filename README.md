@@ -33,12 +33,12 @@ spec:
                         number: 80
                   pathType: ImplementationSpecific
   state: dynamic-ingress-state-sample
-  expected:
-    status: '200'
+  successfulStatus: 200
+  failPolicy: retain
+  expectedResponse:
     body: '{"status":"maintenance"}'
     compareType: json
     comparePolicy: contains
-  errorPolicy: retain
 ```
 
 ### DynamicIngressState
