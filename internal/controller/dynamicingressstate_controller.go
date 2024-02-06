@@ -135,12 +135,16 @@ func (r *DynamicIngressStateReconciler) reconcileIngressState(ctx context.Contex
 
 	response, err := r.getResponse(ctx, dynamicIngressState)
 	if err != nil {
-		dynamicIngressState.Status.Value = ingressv1.DynamicIngressStateStatusValueError
-		dynamicIngressState.Status.Response = nil
+		dynamicIngressState.Status = &ingressv1.DynamicIngressStateStatus{
+			Value:    ingressv1.DynamicIngressStateStatusValueError,
+			Response: nil,
+		}
 		logger.Error(err, fmt.Sprintf("[DynamicIngressState] getResponse Error name=%s", dynamicIngressState.Name))
 	} else {
-		dynamicIngressState.Status.Value = ingressv1.DynamicIngressStateStatusValueHealthy
-		dynamicIngressState.Status.Response = response
+		dynamicIngressState.Status = &ingressv1.DynamicIngressStateStatus{
+			Value:    ingressv1.DynamicIngressStateStatusValueHealthy,
+			Response: response,
+		}
 	}
 
 	now := v1.Time{Time: time.Now()}
