@@ -37,17 +37,17 @@ type DynamicIngressSpec struct {
 	State            string                  `json:"state"`
 	SuccessfulStatus int                     `json:"successfulStatus"`
 	// +kubebuilder:default=retain
-	FailPolicy       FailPolicy             `json:"failPolicy,omitempty"`
+	FailurePolicy    FailurePolicy          `json:"failurePolicy,omitempty"`
 	ExpectedResponse DynamicIngressExpected `json:"expectedResponse"`
 }
 
 // +kubebuilder:validation:Enum=retain;passive;active
-type FailPolicy string
+type FailurePolicy string
 
 const (
-	FailPolicyRetain  FailPolicy = "retain"
-	FailPolicyPassive FailPolicy = "passive"
-	FailPolicyActive  FailPolicy = "active"
+	FailurePolicyRetain  FailurePolicy = "retain"
+	FailurePolicyPassive FailurePolicy = "passive"
+	FailurePolicyActive  FailurePolicy = "active"
 )
 
 // DynamicIngressStatus defines the observed state of DynamicIngress

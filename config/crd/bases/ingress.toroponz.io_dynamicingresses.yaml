@@ -383,7 +383,7 @@ spec:
                 - comparePolicy
                 - compareType
                 type: object
-              failPolicy:
+              failurePolicy:
                 default: retain
                 enum:
                 - retain

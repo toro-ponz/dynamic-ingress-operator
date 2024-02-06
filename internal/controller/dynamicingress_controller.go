@@ -275,11 +275,11 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 	if err != nil {
 		logger.Error(err, "unable to get DynamicIngressState", "name", dynamicIngress.Spec.State)
 
-		if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyActive {
+		if dynamicIngress.Spec.FailurePolicy == ingressv1.FailurePolicyActive {
 			return ingressv1.DynamicIngressStatusConditionActive, nil
-		} else if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyPassive {
+		} else if dynamicIngress.Spec.FailurePolicy == ingressv1.FailurePolicyPassive {
 			return ingressv1.DynamicIngressStatusConditionPassive, nil
-		} else if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyRetain {
+		} else if dynamicIngress.Spec.FailurePolicy == ingressv1.FailurePolicyRetain {
 			return ingressv1.DynamicIngressStatusConditionError, err
 		}
 
@@ -296,11 +296,11 @@ func (r *DynamicIngressReconciler) checkConditions(ctx context.Context, dynamicI
 			dynamicIngress.Spec.SuccessfulStatus,
 		)
 
-		if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyActive {
+		if dynamicIngress.Spec.FailurePolicy == ingressv1.FailurePolicyActive {
 			return ingressv1.DynamicIngressStatusConditionActive, nil
-		} else if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyPassive {
+		} else if dynamicIngress.Spec.FailurePolicy == ingressv1.FailurePolicyPassive {
 			return ingressv1.DynamicIngressStatusConditionPassive, nil
-		} else if dynamicIngress.Spec.FailPolicy == ingressv1.FailPolicyRetain {
+		} else if dynamicIngress.Spec.FailurePolicy == ingressv1.FailurePolicyRetain {
 			return ingressv1.DynamicIngressStatusConditionError, err
 		}
 

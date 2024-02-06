@@ -39,9 +39,9 @@ spec:
                   pathType: ImplementationSpecific
   state: dynamic-ingress-state-sample
   successfulStatus: 200
-  failPolicy: retain
-  # failPolicy: passive
-  # failPolicy: active
+  failurePolicy: retain
+  # failurePolicy: passive
+  # failurePolicy: active
   expectedResponse:
     body: '{"status":"ok"}'
     compareType: json

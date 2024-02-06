@@ -34,7 +34,7 @@ spec:
                   pathType: ImplementationSpecific
   state: dynamic-ingress-state-sample
   successfulStatus: 200
-  failPolicy: retain
+  failurePolicy: retain
   expectedResponse:
     body: '{"status":"maintenance"}'
     compareType: json
