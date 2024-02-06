@@ -2,7 +2,7 @@
 
 A operator that change ingress spec dynamically by external api (or k8s resource).
 
-## CRD
+## Custom Resource
 
 ### DynamicIngress
 
@@ -12,9 +12,7 @@ kind: DynamicIngress
 metadata:
   name: dynamic-ingress-sample
 spec:
-  target:
-    name: test
-    namespace: dynamic-ingress-operator-system
+  target: test-ingress
   passiveIngress: null
   activeIngress:
     template:
@@ -63,7 +61,7 @@ spec:
 
 #### Probe Mode
 
-A mode for calling external HTTP APIs per interval.
+A mode for calling external HTTP APIs.
 
 ```yaml
 apiVersion: ingress.toroponz.io/v1
