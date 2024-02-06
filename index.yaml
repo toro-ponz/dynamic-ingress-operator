@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   dynamic-ingress-operator:
   - apiVersion: v2
+    appVersion: 0.2.0
+    created: "2024-02-06T05:26:25.939609387Z"
+    description: A Helm chart for Dynamic Ingress Operator
+    digest: 90bcc25db07ab99ddfa7ed36de8d6832a70749af52f9cd74acd6682b26dba26d
+    name: dynamic-ingress-operator
+    type: application
+    urls:
+    - https://github.com/toro-ponz/dynamic-ingress-operator/releases/download/dynamic-ingress-operator-0.2.0/dynamic-ingress-operator-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2024-02-02T08:57:27.896227562Z"
     description: A Helm chart for Dynamic Ingress Operator
@@ -21,4 +31,4 @@ entries:
     urls:
     - https://github.com/toro-ponz/dynamic-ingress-operator/releases/download/dynamic-ingress-operator-0.0.1/dynamic-ingress-operator-0.0.1.tgz
     version: 0.0.1
-generated: "2024-02-02T08:57:27.896240076Z"
+generated: "2024-02-06T05:26:25.939620829Z"
