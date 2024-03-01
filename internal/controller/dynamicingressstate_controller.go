@@ -163,10 +163,6 @@ func (r *DynamicIngressStateReconciler) getResponse(ctx context.Context, dynamic
 	logger := log.FromContext(ctx)
 
 	if dynamicIngressState.Spec.FixedResponse != nil {
-		if dynamicIngressState.Status.Response == dynamicIngressState.Spec.FixedResponse {
-			logger.V(DEBUG).Info(fmt.Sprintf("[DynamicIngressState] skip update fixedResponse name=%s", dynamicIngressState.Name))
-			return nil, nil
-		}
 		return dynamicIngressState.Spec.FixedResponse, nil
 	} else if dynamicIngressState.Spec.Probe != nil {
 		response, err := r.probe(ctx, *dynamicIngressState.Spec.Probe)
